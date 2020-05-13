@@ -11,6 +11,12 @@ import { ServiceDataProvider } from './serviceDataProvider';
 import { WatchUtil, FileContentChangeNotifier } from '../util/watch';
 
 const kubeConfigFolder: string = path.join(Platform.getUserHomePath(), '.kube');
+const kubeconfigSplit: string[] = process.env.KUBECONFIG.split('/');
+kubeconfigSplit.pop();
+const kubeconfigDir: string = kubeconfigSplit.join('/');
+const kubeConfigFolderENV = `${kubeconfigDir  }/`;
+// eslint-disable-next-line no-console
+console.log(`kubeConfigFolderENV ${kubeConfigFolderENV}`);
 
 function issueUrl(): string {
   const { packageJSON } = extensions.getExtension('redhat.vscode-knative');
@@ -28,10 +34,14 @@ export class ServiceExplorer implements Disposable {
 
   private fsw: FileContentChangeNotifier;
 
+  private fswEnv: FileContentChangeNotifier;
+
   public constructor() {
     const treeDataProvider = new ServiceDataProvider();
     this.fsw = WatchUtil.watchFileForContextChange(kubeConfigFolder, 'config');
+    this.fswEnv = WatchUtil.watchFileForContextChange(kubeConfigFolderENV, 'kubeconfig');
     this.fsw.emitter.on('file-changed', treeDataProvider.refresh.bind(this));
+    this.fswEnv.emitter.on('file-changed', treeDataProvider.refresh.bind(this));
 
     // Initialize the tree/explorer view by linking the refernece in the package.json to this class.
     this.treeView = window.createTreeView('knativeProjectExplorerServices', { treeDataProvider });
