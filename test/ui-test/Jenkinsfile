@@ -224,7 +224,7 @@ oc get csv
 
 echo "Serverless Operator is deploying..."
 
-treshold=240
+treshold=420
 timer=0
 while [ "\$(operator_deployed)" != "1" ]; do
 	echo "waiting for \$timer sec..."
